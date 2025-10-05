@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { getTierConfig, calculateRollover } from '@/lib/config/pricing'
 import type { TierName } from '@/lib/config/pricing'
 
