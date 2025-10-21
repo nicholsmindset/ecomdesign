@@ -4,13 +4,12 @@ import './globals.css'
 import { Navbar } from '@/components/navbar'
 import { Toaster } from '@/components/ui/toaster'
 import { SessionProvider } from '@/components/session-provider'
+import { OrganizationSchema, WebsiteSchema, SoftwareApplicationSchema } from '@/components/schema-org'
+import { DEFAULT_METADATA } from '@/lib/seo'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'PhotoForge AI - AI-Powered Image Processing',
-  description: 'Transform your product images with AI-powered background generation',
-}
+export const metadata: Metadata = DEFAULT_METADATA
 
 export default function RootLayout({
   children,
@@ -20,6 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <OrganizationSchema />
+        <WebsiteSchema />
+        <SoftwareApplicationSchema />
         <SessionProvider>
           <div className="relative flex min-h-screen flex-col">
             <Navbar />

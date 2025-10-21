@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Upload, X, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react'
 import { calculateBatchCredits, getBatchDiscountInfo } from '@/lib/config/pricing'
 import { redirect } from 'next/navigation'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 export default function UploadPage() {
   const router = useRouter()
@@ -123,6 +124,7 @@ export default function UploadPage() {
 
   return (
     <div className="container py-8 max-w-4xl">
+      <Breadcrumb />
       <div className="space-y-2 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Upload Images</h1>
         <p className="text-muted-foreground">

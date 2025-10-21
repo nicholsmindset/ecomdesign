@@ -1,10 +1,20 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
+import { Metadata } from 'next'
 import { authOptions } from '@/lib/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditCard, Image, TrendingUp, Upload } from 'lucide-react'
+import { Breadcrumb } from '@/components/breadcrumb'
+import { generateMetadata as genMeta } from '@/lib/seo'
+
+export const metadata: Metadata = genMeta({
+  title: 'Dashboard',
+  description: 'View your account overview, credit balance, and recent jobs',
+  url: '/dashboard',
+  noIndex: true, // Protected page
+})
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -17,6 +27,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="container py-8 space-y-8">
+      <Breadcrumb />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome back, {user.name || user.email}!

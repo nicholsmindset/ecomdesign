@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Image, Clock, CheckCircle, XCircle, Upload } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 interface Job {
   id: string
@@ -71,6 +72,7 @@ export default function JobsPage() {
 
   return (
     <div className="container py-8 space-y-6">
+      <Breadcrumb />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Jobs</h1>

@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Check, Loader2, CreditCard, Zap } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { PRICING_TIERS, ALA_CARTE_OPTIONS } from '@/lib/config/pricing'
+import { Breadcrumb } from '@/components/breadcrumb'
 
 interface CreditSummary {
   currentBalance: number
@@ -126,6 +127,7 @@ export default function BillingPage() {
 
   return (
     <div className="container py-8 max-w-6xl space-y-8">
+      <Breadcrumb />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Billing & Credits</h1>
         <p className="text-muted-foreground">

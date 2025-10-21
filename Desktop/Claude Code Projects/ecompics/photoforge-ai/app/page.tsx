@@ -1,7 +1,15 @@
 import Link from 'next/link'
+import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, Zap, Shield, Upload } from 'lucide-react'
+import { generateMetadata as genMeta } from '@/lib/seo'
+
+export const metadata: Metadata = genMeta({
+  title: 'PhotoForge AI - Transform Product Images with AI Backgrounds',
+  description: 'Upload your product photos and let our AI generate stunning, professional backgrounds in seconds. Perfect for e-commerce, marketing, and social media. Start free today!',
+  url: '/',
+})
 
 export default function HomePage() {
   return (

@@ -1,9 +1,45 @@
 import Link from 'next/link'
+import { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, X, Zap, HelpCircle } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { PRICING_TIERS, ALA_CARTE_OPTIONS } from '@/lib/config/pricing'
+import { FAQSchema } from '@/components/schema-org'
+import { generateMetadata as genMeta } from '@/lib/seo'
+
+export const metadata: Metadata = genMeta({
+  title: 'Pricing Plans - PhotoForge AI',
+  description: 'Choose the perfect plan for your business. From free to enterprise, get AI-powered product image backgrounds with transparent pricing. No hidden fees. Start free today!',
+  url: '/pricing',
+})
+
+const FAQ_DATA = [
+  {
+    question: 'How do credits work?',
+    answer: 'Each image you process costs 1 credit. Batch discounts automatically apply when you upload multiple images at once. Credits are deducted when you start a job, and refunded if the job fails.'
+  },
+  {
+    question: 'What happens to unused credits?',
+    answer: 'Unused monthly credits roll over to the next month, up to your plan\'s rollover cap. For example, Professional plan users can roll over up to 200 credits. À la carte credits never expire.'
+  },
+  {
+    question: 'Can I cancel my subscription?',
+    answer: 'Yes, you can cancel anytime. Your subscription will remain active until the end of your billing period, and you\'ll keep access to your credits until they\'re used.'
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer: 'We accept all major credit cards (Visa, MasterCard, American Express) through our secure payment processor, Stripe.'
+  },
+  {
+    question: 'Can I upgrade or downgrade my plan?',
+    answer: 'Yes! You can change your plan at any time. When upgrading, you\'ll be charged a prorated amount. When downgrading, the change takes effect at the start of your next billing cycle.'
+  },
+  {
+    question: 'Is there a free trial?',
+    answer: 'Yes! Every new account starts with 5 free credits. No credit card required. You can test the service before committing to a paid plan.'
+  }
+]
 
 export default function PricingPage() {
   return (
@@ -265,6 +301,7 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+      <FAQSchema faqs={FAQ_DATA} />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
+import { Breadcrumb } from '@/components/breadcrumb'
 import { Loader2, User, Bell, Shield, Trash2 } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -114,6 +115,7 @@ export default function SettingsPage() {
 
   return (
     <div className="container py-8 max-w-4xl space-y-8">
+      <Breadcrumb />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">

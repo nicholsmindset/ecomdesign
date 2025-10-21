@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowLeft, Download, XCircle, CheckCircle, Clock, AlertCircle } from 'lucide-react'
+import { Breadcrumb } from '@/components/breadcrumb'
 import { formatDate } from '@/lib/utils'
 
 interface Job {
@@ -137,6 +138,7 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="container py-8 max-w-6xl space-y-6">
+      <Breadcrumb />
       {/* Header */}
       <div>
         <Button variant="ghost" size="sm" asChild className="mb-4">
