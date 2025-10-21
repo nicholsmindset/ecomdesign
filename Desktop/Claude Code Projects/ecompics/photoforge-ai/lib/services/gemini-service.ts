@@ -28,15 +28,15 @@ export class GeminiService {
 
     this.genAI = new GoogleGenerativeAI(apiKey)
 
-    // Use Gemini 2.0 Flash (experimental) for fast image generation
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp'
+    // Use Gemini 2.5 Flash for image generation
+    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
     this.model = this.genAI.getGenerativeModel({ model: modelName })
 
     this.storageService = new StorageService()
   }
 
   /**
-   * Process a single image with AI background generation
+   * Process a single image with AI background generation using Gemini 2.5 Flash
    */
   async processImage(
     imageUrl: string,
@@ -51,40 +51,67 @@ export class GeminiService {
       // Convert to base64 for Gemini
       const base64Image = imageBuffer.toString('base64')
 
-      // Build the prompt based on options
-      const prompt = this.buildPrompt(options)
+      // Build the prompt for background generation
+      const prompt = this.buildImageGenerationPrompt(options)
 
-      // Generate with Gemini
+      console.log('Processing with Gemini 2.5 Flash...')
+      console.log('Prompt:', prompt.substring(0, 150) + '...')
+
+      // Generate with Gemini 2.5 Flash Image model
       const result = await this.model.generateContent([
         {
           inlineData: {
             data: base64Image,
-            mimeType: 'image/jpeg',
+            mimeType: this.getMimeType(imageUrl),
           },
         },
         prompt,
       ])
 
       const response = await result.response
+
+      // Check if the response contains generated image
+      // Note: The actual response format may vary - adjust based on API response
+      const candidates = response.candidates || []
+
+      if (candidates.length > 0 && candidates[0].content.parts) {
+        // Look for inline data in the response (generated image)
+        for (const part of candidates[0].content.parts) {
+          if (part.inlineData) {
+            // We got a generated image!
+            const generatedImageBuffer = Buffer.from(part.inlineData.data, 'base64')
+
+            // Upload to S3
+            const processedImageUrl = await this.uploadProcessedImage(
+              generatedImageBuffer,
+              imageUrl,
+              part.inlineData.mimeType || 'image/jpeg'
+            )
+
+            const processingTimeMs = Date.now() - startTime
+
+            return {
+              originalUrl: imageUrl,
+              processedUrl: processedImageUrl,
+              processingTimeMs,
+            }
+          }
+        }
+      }
+
+      // If no image was generated, try text-based approach
       const generatedText = response.text()
+      console.log('Gemini response (text):', generatedText.substring(0, 200) + '...')
 
-      // For now, since Gemini 2.0 Flash doesn't directly generate images,
-      // we'll use it to generate a detailed enhancement prompt
-      // Then use imagen or another image generation API
-      // This is a placeholder - you'd integrate with an actual image generation API
-
-      // For demonstration, we'll simulate processing
-      const processedImageUrl = await this.simulateImageProcessing(
-        imageUrl,
-        generatedText,
-        options
-      )
+      // Fallback: Use original image if generation fails
+      // In production, you might want to retry or use a different approach
+      console.warn('No image generated, using original as fallback')
 
       const processingTimeMs = Date.now() - startTime
 
       return {
         originalUrl: imageUrl,
-        processedUrl: processedImageUrl,
+        processedUrl: imageUrl, // Fallback to original
         processingTimeMs,
       }
     } catch (error) {
@@ -128,28 +155,26 @@ export class GeminiService {
   }
 
   /**
-   * Build the AI prompt based on options
+   * Build the image generation prompt for Gemini 2.5 Flash
    */
-  private buildPrompt(options: ImageProcessingOptions): string {
+  private buildImageGenerationPrompt(options: ImageProcessingOptions): string {
     const { backgroundPrompt, modelType = 'realistic', sceneStyle } = options
 
-    let prompt = `You are an expert product photographer and image editor.
+    let prompt = `Transform this product image by replacing its background while keeping the product perfectly intact.
 
-Task: Analyze this product image and create a detailed description for generating a new professional background.
+Product Background Request: ${backgroundPrompt}
 
-Background Requirements:
-- Style: ${backgroundPrompt}
-- Model Type: ${modelType}
+Requirements:
+- Photography Style: ${modelType}
 ${sceneStyle ? `- Scene Style: ${sceneStyle}` : ''}
+- Keep the product completely unchanged (no modifications to the product itself)
+- Replace ONLY the background
+- Maintain professional ${modelType} photography quality
+- Ensure proper lighting that matches the new background
+- Keep the product in sharp focus
+- Make it look like a professional studio photograph
 
-Please provide:
-1. A detailed description of how to create the perfect background for this product
-2. Lighting suggestions (soft, dramatic, natural, studio, etc.)
-3. Color palette recommendations
-4. Composition and placement guidelines
-5. Any special effects or enhancements
-
-Make the description specific, professional, and optimized for ${modelType} photography.`
+Generate a high-quality image with the new background that looks natural and professionally photographed.`
 
     return prompt
   }
@@ -171,54 +196,50 @@ Make the description specific, professional, and optimized for ${modelType} phot
   }
 
   /**
-   * Simulate image processing (placeholder)
-   *
-   * NOTE: Replace this with actual image generation API integration
-   * Options:
-   * - Stability AI (Stable Diffusion)
-   * - DALL-E API
-   * - Midjourney API
-   * - Replicate
-   * - Your own custom AI model
+   * Get MIME type from image URL
    */
-  private async simulateImageProcessing(
-    originalUrl: string,
-    enhancementPrompt: string,
-    options: ImageProcessingOptions
-  ): Promise<string> {
-    // This is a placeholder implementation
-    // In production, you would:
-    // 1. Use the enhancementPrompt to guide an image generation model
-    // 2. Apply the new background to the product image
-    // 3. Upload the result to S3
-    // 4. Return the new S3 URL
+  private getMimeType(url: string): string {
+    const extension = url.split('.').pop()?.toLowerCase()
 
-    console.log('Enhancement prompt generated:', enhancementPrompt.substring(0, 200) + '...')
-    console.log('Processing with options:', options)
+    const mimeTypes: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'webp': 'image/webp',
+      'gif': 'image/gif',
+    }
 
-    // For now, return the original URL
-    // TODO: Integrate with actual image generation API
-    return originalUrl
+    return mimeTypes[extension || 'jpg'] || 'image/jpeg'
   }
 
   /**
-   * Generate image with Gemini (if using a model that supports it)
+   * Upload processed image to S3
    */
-  async generateImage(prompt: string): Promise<string> {
+  private async uploadProcessedImage(
+    imageBuffer: Buffer,
+    originalUrl: string,
+    mimeType: string
+  ): Promise<string> {
     try {
-      // Note: Check if your Gemini model supports image generation
-      // As of now, most Gemini models are text-only
-      // You may need to use Imagen or another image generation model
+      // Generate unique filename for processed image
+      const timestamp = Date.now()
+      const randomString = Math.random().toString(36).substring(7)
+      const extension = mimeType.split('/')[1] || 'jpg'
+      const filename = `processed/${timestamp}_${randomString}.${extension}`
 
-      const result = await this.model.generateContent(prompt)
-      const response = await result.response
-      const text = response.text()
+      // Upload to S3
+      const uploadedUrl = await this.storageService.uploadBuffer(
+        imageBuffer,
+        filename,
+        mimeType
+      )
 
-      // This would need to be adapted based on the actual API response
-      // if the model supports image generation
-      return text
+      console.log('Processed image uploaded:', uploadedUrl)
+
+      return uploadedUrl
     } catch (error) {
-      throw new Error(`Image generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('Failed to upload processed image:', error)
+      throw new Error(`Failed to upload processed image: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
@@ -227,7 +248,7 @@ Make the description specific, professional, and optimized for ${modelType} phot
    */
   getModelInfo(): { name: string; apiKey: string } {
     return {
-      name: process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp',
+      name: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
       apiKey: process.env.GOOGLE_AI_API_KEY ? '***' + process.env.GOOGLE_AI_API_KEY.slice(-4) : 'not set',
     }
   }

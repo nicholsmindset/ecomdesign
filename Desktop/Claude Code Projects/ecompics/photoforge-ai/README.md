@@ -78,7 +78,7 @@ AI-powered image processing e-commerce platform for transforming product images 
 - **Payments**: Stripe
 - **File Storage**: AWS S3
 - **Job Queue**: Bull + Redis
-- **AI Processing**: Google Gemini 2.0 Flash
+- **AI Processing**: Google Gemini 2.5 Flash (with image generation)
 - **Background Worker**: Custom Bull queue processor
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI
@@ -97,7 +97,7 @@ AI-powered image processing e-commerce platform for transforming product images 
 - Redis server
 - AWS S3 bucket
 - Stripe account
-- **Google AI API Key** (for Gemini 2.0 Flash) - [Get it here](https://makersuite.google.com/app/apikey)
+- **Google AI API Key** (for Gemini 2.5 Flash) - [Get it here](https://aistudio.google.com/app/apikey)
 
 ### Installation
 

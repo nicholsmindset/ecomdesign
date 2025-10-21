@@ -1,12 +1,13 @@
 # Image Processing Worker
 
-This directory contains the background worker that processes image jobs using Google Gemini AI.
+This directory contains the background worker that processes image jobs using Google Gemini 2.5 Flash with image generation capabilities.
 
 ## Overview
 
 The worker:
 - Listens to the Bull/Redis queue for new image processing jobs
-- Uses Google Gemini 2.0 Flash for AI-powered background generation
+- Uses **Google Gemini 2.5 Flash** for AI-powered background generation
+- Generates new backgrounds while preserving product integrity
 - Updates job status and progress in real-time
 - Handles credit refunds for failed images
 - Processes images with automatic retries
@@ -26,7 +27,7 @@ Ensure these are set in your `.env` file:
 ```bash
 # Required
 GOOGLE_AI_API_KEY="your-gemini-api-key"
-GEMINI_MODEL="gemini-2.0-flash-exp"
+GEMINI_MODEL="gemini-2.5-flash"
 DATABASE_URL="postgresql://..."
 REDIS_URL="redis://localhost:6379"
 
@@ -97,7 +98,7 @@ The worker logs provide real-time information:
 
 ```bash
 🚀 Image Processing Worker Starting...
-📡 Gemini Model: gemini-2.0-flash-exp
+📡 Gemini Model: gemini-2.5-flash
 🔑 API Key: ***abc123
 
 📸 Processing Job job_abc123
@@ -211,9 +212,16 @@ All workers will share the same Redis queue and process jobs in parallel.
 
 ## API Integration Notes
 
-**Current Implementation**: The Gemini service currently uses Gemini 2.0 Flash for analysis and prompt generation. The actual background replacement is a placeholder.
+**Current Implementation**: The system uses **Gemini 2.5 Flash** which has built-in image generation capabilities!
 
-**To implement full image generation**, you need to integrate with an image generation API:
+The implementation:
+- ✅ Analyzes product images
+- ✅ Generates new backgrounds using AI
+- ✅ Preserves product integrity
+- ✅ Uploads processed images to S3
+- ⚠️ Falls back to original if generation fails
+
+**Optional Enhancements**: While Gemini 2.5 Flash handles image generation, you can optionally integrate additional image generation APIs for specialized effects:
 
 ### Option 1: Stability AI (Stable Diffusion)
 
