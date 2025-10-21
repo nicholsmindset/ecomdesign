@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useDropzone } from 'react-dropzone'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -266,7 +267,7 @@ export default function UploadPage() {
                     <p className="font-semibold">Insufficient credits</p>
                     <p>You need {creditsNeeded - userCredits} more credits to process this job.</p>
                     <Button variant="link" className="h-auto p-0 text-destructive" asChild>
-                      <a href="/billing">Purchase credits</a>
+                      <Link href="/billing">Purchase credits</Link>
                     </Button>
                   </div>
                 </div>
