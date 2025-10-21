@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { calculateBatchCredits, getBatchDiscountInfo, hasEnoughCredits } from "@/lib/pricing"
+import { calculateBatchCredits, getBatchDiscountInfo, hasEnoughCredits } from "@/lib/config/pricing"
 import { QueueService } from "@/lib/services/queue-service"
 import { StorageService } from "@/lib/services/storage-service"
 import { creditService } from "@/lib/services/credit-service"
