@@ -209,16 +209,28 @@ photoforge-ai/
 
 ## Available Scripts
 
+### Development
 - `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
+- `npm run dev:worker` - Start image processing worker (development)
 - `npm run lint` - Run ESLint
 - `npm run type-check` - Run TypeScript type checking
 - `npm test` - Run tests (when configured)
+
+### Production
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run worker` - Start image processing worker (production)
+
+### Database
 - `npm run db:generate` - Generate Prisma client
 - `npm run db:push` - Push schema changes to database
 - `npm run db:migrate` - Run database migrations
+- `npm run db:migrate:deploy` - Deploy migrations to production
 - `npm run db:studio` - Open Prisma Studio
+
+### Deployment
+- `./scripts/pre-deploy-check.sh` - Run pre-deployment checks
+- `./scripts/post-deploy-verify.sh <url>` - Verify production deployment
 
 ---
 
@@ -255,37 +267,49 @@ See `.env.example` for complete list. Critical variables:
 
 ---
 
-## Next Steps to Production
+## Production Deployment
 
-### Phase 1: Frontend Foundation (Week 1)
-1. Set up Tailwind CSS
-2. Create root layout and basic pages
-3. Implement authentication UI
-4. Create dashboard skeleton
+PhotoForge AI is production-ready! Follow these guides to deploy:
 
-### Phase 2: Core Features (Weeks 2-3)
-1. Job upload interface
-2. Job history and status tracking
-3. Results viewing
-4. Billing/subscription management
+### Quick Start (30 minutes)
+See [QUICKSTART.md](./QUICKSTART.md) for a rapid deployment guide.
 
-### Phase 3: API Completion (Week 3)
-1. Remaining job management endpoints
-2. User/billing endpoints
-3. Subscription management endpoints
+### Comprehensive Guide
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions including:
+- Infrastructure setup (PostgreSQL, Redis, S3, Stripe)
+- Environment configuration
+- Application & worker deployment
+- Security best practices
+- Monitoring and maintenance
 
-### Phase 4: Testing & Polish (Week 4)
-1. Set up testing framework
-2. Write tests for services and APIs
-3. Add error handling and validation
-4. Security hardening (rate limiting, CSRF, etc.)
+### Security
+See [SECURITY.md](./SECURITY.md) for complete security checklist and best practices.
 
-### Phase 5: Deployment (Week 5)
-1. Docker setup
-2. CI/CD pipeline
-3. Database migrations
-4. Monitoring and logging
-5. Production deployment
+### Pre-Deployment Checklist
+```bash
+# Run automated checks before deploying
+./scripts/pre-deploy-check.sh
+```
+
+### Post-Deployment Verification
+```bash
+# Verify your production deployment
+./scripts/post-deploy-verify.sh https://your-domain.com
+```
+
+### Deployment Options
+
+**Recommended:**
+- **Application**: Vercel (automatic scaling, edge functions)
+- **Worker**: Railway (persistent background worker)
+- **Database**: Neon (serverless PostgreSQL)
+- **Redis**: Upstash (serverless Redis)
+- **Storage**: AWS S3
+
+**Alternatives:**
+- Docker + AWS ECS/Fargate
+- DigitalOcean App Platform
+- Heroku (with worker dyno)
 
 ---
 
