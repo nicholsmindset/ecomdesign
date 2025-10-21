@@ -78,22 +78,26 @@ async function processJob(job: Job<JobData>): Promise<void> {
       // Also update Bull job progress
       await job.progress(progressPercent)
 
-      try {
-        // Process image with Gemini
-        const result = await geminiService.processImage(imageUrl, {
-          backgroundPrompt,
-          modelType: dbJob.modelType as any,
-          sceneStyle: dbJob.sceneStyle,
-        })
+      // Process image with Gemini
+      const result = await geminiService.processImage(imageUrl, {
+        backgroundPrompt,
+        modelType: dbJob.modelType as any,
+        sceneStyle: dbJob.sceneStyle,
+      })
 
-        outputImages.push(result.processedUrl)
+      // Add processed/fallback image to output
+      outputImages.push(result.processedUrl)
+
+      // Count as completed only if successfully processed
+      if (result.status === 'success') {
         completedImages++
-
-        console.log(`   ✅ Image ${imageNumber}/${totalImages} processed (${result.processingTimeMs}ms)`)
-      } catch (error) {
-        console.error(`   ❌ Failed to process image ${imageNumber}:`, error)
-        // Add original image as fallback
-        outputImages.push(imageUrl)
+        console.log(`   ✅ Image ${imageNumber}/${totalImages} processed successfully (${result.processingTimeMs}ms)`)
+      } else if (result.status === 'fallback') {
+        console.warn(`   ⚠️  Image ${imageNumber}/${totalImages} using fallback: ${result.message}`)
+        // Don't count fallback as completed (no charge)
+      } else {
+        console.error(`   ❌ Image ${imageNumber}/${totalImages} failed: ${result.message}`)
+        // Don't count error as completed (no charge)
       }
     }
 

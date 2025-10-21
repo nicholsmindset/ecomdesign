@@ -12,6 +12,8 @@ export interface ProcessedImage {
   originalUrl: string
   processedUrl: string
   processingTimeMs: number
+  status: 'success' | 'fallback' | 'error'
+  message?: string
 }
 
 export class GeminiService {
@@ -79,6 +81,7 @@ export class GeminiService {
         for (const part of candidates[0].content.parts) {
           if (part.inlineData) {
             // We got a generated image!
+            console.log('✓ Successfully generated image with Gemini 2.5 Flash')
             const generatedImageBuffer = Buffer.from(part.inlineData.data, 'base64')
 
             // Upload to S3
@@ -94,29 +97,42 @@ export class GeminiService {
               originalUrl: imageUrl,
               processedUrl: processedImageUrl,
               processingTimeMs,
+              status: 'success',
+              message: 'Image successfully processed by Gemini 2.5 Flash',
             }
           }
         }
       }
 
-      // If no image was generated, try text-based approach
+      // If no image was generated, log response for debugging
       const generatedText = response.text()
-      console.log('Gemini response (text):', generatedText.substring(0, 200) + '...')
-
-      // Fallback: Use original image if generation fails
-      // In production, you might want to retry or use a different approach
-      console.warn('No image generated, using original as fallback')
+      console.warn('⚠ Gemini did not return an image. Response:', generatedText.substring(0, 300))
+      console.warn('⚠ Using original image as fallback')
 
       const processingTimeMs = Date.now() - startTime
 
+      // Return fallback with clear status
       return {
         originalUrl: imageUrl,
         processedUrl: imageUrl, // Fallback to original
         processingTimeMs,
+        status: 'fallback',
+        message: 'Gemini returned text instead of image - using original image as fallback',
       }
     } catch (error) {
-      console.error('Error processing image with Gemini:', error)
-      throw new Error(`Failed to process image: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      console.error('✗ Error processing image with Gemini:', error)
+
+      const processingTimeMs = Date.now() - startTime
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+      // Return error status instead of throwing - allows job to complete with some images
+      return {
+        originalUrl: imageUrl,
+        processedUrl: imageUrl, // Fallback to original on error
+        processingTimeMs,
+        status: 'error',
+        message: `Processing failed: ${errorMessage}`,
+      }
     }
   }
 
@@ -131,25 +147,38 @@ export class GeminiService {
     const results: ProcessedImage[] = []
     const totalImages = imageUrls.length
 
-    for (let i = 0; i < totalImages; i++) {
-      try {
-        const result = await this.processImage(imageUrls[i], options)
-        results.push(result)
+    console.log(`Starting batch processing of ${totalImages} images...`)
 
-        if (onProgress) {
-          const progress = Math.round(((i + 1) / totalImages) * 100)
-          onProgress(progress, i + 1)
-        }
-      } catch (error) {
-        console.error(`Failed to process image ${i + 1}:`, error)
-        // Continue with next image even if one fails
-        results.push({
-          originalUrl: imageUrls[i],
-          processedUrl: imageUrls[i], // Fallback to original
-          processingTimeMs: 0,
-        })
+    for (let i = 0; i < totalImages; i++) {
+      console.log(`Processing image ${i + 1}/${totalImages}...`)
+
+      const result = await this.processImage(imageUrls[i], options)
+      results.push(result)
+
+      // Log result status
+      if (result.status === 'success') {
+        console.log(`✓ Image ${i + 1}/${totalImages} processed successfully`)
+      } else if (result.status === 'fallback') {
+        console.warn(`⚠ Image ${i + 1}/${totalImages} using fallback: ${result.message}`)
+      } else {
+        console.error(`✗ Image ${i + 1}/${totalImages} failed: ${result.message}`)
+      }
+
+      if (onProgress) {
+        const progress = Math.round(((i + 1) / totalImages) * 100)
+        onProgress(progress, i + 1)
       }
     }
+
+    // Log batch summary
+    const successCount = results.filter((r) => r.status === 'success').length
+    const fallbackCount = results.filter((r) => r.status === 'fallback').length
+    const errorCount = results.filter((r) => r.status === 'error').length
+
+    console.log(`\nBatch Processing Summary:`)
+    console.log(`  ✓ Success: ${successCount}/${totalImages}`)
+    console.log(`  ⚠ Fallback: ${fallbackCount}/${totalImages}`)
+    console.log(`  ✗ Error: ${errorCount}/${totalImages}`)
 
     return results
   }

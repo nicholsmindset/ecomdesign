@@ -203,3 +203,6 @@ export class QueueService {
     return this.queue
   }
 }
+
+// Export singleton instance for use across the application
+export const queueService = new QueueService()

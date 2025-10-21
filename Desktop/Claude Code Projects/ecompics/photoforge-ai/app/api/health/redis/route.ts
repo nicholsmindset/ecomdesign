@@ -9,18 +9,18 @@ import { queueService } from '@/lib/services/queue-service'
 
 export async function GET() {
   try {
-    const queue = queueService.getQueue()
-    const jobCounts = await queue.getJobCounts()
+    // Use the getStats() method which properly handles job counts
+    const stats = await queueService.getStats()
 
     return NextResponse.json({
       status: 'healthy',
       redis: 'connected',
       queue: {
-        waiting: jobCounts.waiting,
-        active: jobCounts.active,
-        completed: jobCounts.completed,
-        failed: jobCounts.failed,
-        delayed: jobCounts.delayed,
+        waiting: stats.waiting,
+        active: stats.active,
+        completed: stats.completed,
+        failed: stats.failed,
+        delayed: stats.delayed,
       },
       timestamp: new Date().toISOString(),
     })
