@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { calculateBatchCredits, getBatchDiscountInfo, hasEnoughCredits } from "@/lib/pricing"
+import { calculateBatchCredits, getBatchDiscountInfo, hasEnoughCredits } from "@/lib/config/pricing"
 import { QueueService } from "@/lib/services/queue-service"
 import { StorageService } from "@/lib/services/storage-service"
 import { creditService } from "@/lib/services/credit-service"
@@ -9,7 +10,7 @@ import { creditService } from "@/lib/services/credit-service"
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
