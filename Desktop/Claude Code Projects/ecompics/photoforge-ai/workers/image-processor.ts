@@ -13,6 +13,7 @@ import { PrismaClient } from '@prisma/client'
 import { QueueService, JobData } from '../lib/services/queue-service'
 import { GeminiService } from '../lib/services/gemini-service'
 import { creditService } from '../lib/services/credit-service'
+import { emailService } from '../lib/services/email-service'
 
 const prisma = new PrismaClient()
 const queueService = new QueueService()
@@ -148,8 +149,22 @@ async function processJob(job: Job<JobData>): Promise<void> {
       console.log(`   Credits refunded: ${creditsToRefund}`)
     }
 
-    // TODO: Send email notification to user
-    // await sendJobCompletedEmail(dbJob.user.email, jobId, completedImages)
+    // Send email notification to user
+    if (emailService.isEnabled()) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+      const failedImages = totalImages - completedImages
+
+      await emailService.sendJobCompletedEmail({
+        email: dbJob.user.email,
+        jobId,
+        totalImages,
+        successfulImages: completedImages,
+        failedImages,
+        jobUrl: `${appUrl}/jobs/${jobId}`,
+      })
+
+      console.log(`📧 Email notification sent to ${dbJob.user.email}`)
+    }
 
   } catch (error) {
     console.error(`❌ Job ${jobId} failed:`, error)
