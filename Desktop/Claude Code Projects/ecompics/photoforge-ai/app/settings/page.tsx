@@ -37,7 +37,8 @@ export default function SettingsPage() {
       })
 
       if (response.ok) {
-        await update({ name })
+        // Refetch session to get updated user data
+        await update()
         toast({
           title: 'Profile updated',
           description: 'Your profile has been updated successfully',

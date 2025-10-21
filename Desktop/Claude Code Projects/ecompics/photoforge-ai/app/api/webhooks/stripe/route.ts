@@ -26,10 +26,19 @@ export async function POST(request: NextRequest) {
           // Subscription checkout completed
           // The subscription will be handled by the subscription.created event
           console.log('Subscription checkout completed:', session.id)
-        } else if (session.mode === 'payment') {
-          // À la carte payment completed
-          // The payment will be handled by payment_intent.succeeded
-          console.log('Payment checkout completed:', session.id)
+        } else if (session.mode === 'payment' && session.metadata?.type === 'ala_carte') {
+          // À la carte payment completed - handle as fallback
+          const userId = session.metadata.userId
+          const credits = parseInt(session.metadata.credits || '0')
+
+          if (userId && credits) {
+            const paymentIntentId = session.payment_intent as string
+            await stripeService.handlePaymentSuccess({
+              id: paymentIntentId,
+              metadata: session.metadata,
+            } as Stripe.PaymentIntent)
+            console.log('À la carte payment completed (fallback handler):', session.id)
+          }
         }
         break
       }

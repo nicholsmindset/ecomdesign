@@ -108,6 +108,13 @@ export class StripeService {
       ],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?payment=cancelled`,
+      payment_intent_data: {
+        metadata: {
+          userId,
+          credits: credits.toString(),
+          type: 'ala_carte',
+        },
+      },
       metadata: {
         userId,
         credits: credits.toString(),
