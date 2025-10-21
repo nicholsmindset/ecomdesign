@@ -21,6 +21,7 @@ AI-powered image processing e-commerce platform for transforming product images 
 - [x] **Storage Service** - AWS S3 integration for file uploads
 - [x] **Queue Service** - Bull/Redis job queue for background processing
 - [x] **Stripe Service** - Payment & subscription management
+- [x] **Gemini AI Service** - Google Gemini 2.0 Flash integration for image processing
 
 #### Database Schema
 - [x] 8 Prisma models (User, Job, Subscription, CreditTransaction, etc.)
@@ -77,6 +78,8 @@ AI-powered image processing e-commerce platform for transforming product images 
 - **Payments**: Stripe
 - **File Storage**: AWS S3
 - **Job Queue**: Bull + Redis
+- **AI Processing**: Google Gemini 2.0 Flash
+- **Background Worker**: Custom Bull queue processor
 - **Styling**: Tailwind CSS
 - **UI Components**: Radix UI
 - **Error Tracking**: Sentry
@@ -94,6 +97,7 @@ AI-powered image processing e-commerce platform for transforming product images 
 - Redis server
 - AWS S3 bucket
 - Stripe account
+- **Google AI API Key** (for Gemini 2.0 Flash) - [Get it here](https://makersuite.google.com/app/apikey)
 
 ### Installation
 
@@ -115,6 +119,8 @@ AI-powered image processing e-commerce platform for transforming product images 
    Fill in all required environment variables in `.env.local`:
    - `DATABASE_URL` - PostgreSQL connection string
    - `NEXTAUTH_SECRET` - Generate with `openssl rand -base64 32`
+   - `GOOGLE_AI_API_KEY` - **REQUIRED** Google Gemini API key for AI processing
+   - `GEMINI_MODEL` - Model name (default: gemini-2.0-flash-exp)
    - `AWS_*` - AWS credentials and S3 bucket
    - `REDIS_URL` - Redis connection string
    - `STRIPE_*` - Stripe keys and price IDs
@@ -125,10 +131,22 @@ AI-powered image processing e-commerce platform for transforming product images 
    npm run db:push
    ```
 
-5. **Run development server**
+5. **Start Redis server** (required for job queue)
+   ```bash
+   redis-server
+   ```
+
+6. **Run development server**
    ```bash
    npm run dev
    ```
+
+7. **Start the image processing worker** (in a separate terminal)
+   ```bash
+   npm run dev:worker
+   ```
+
+   This starts the background worker that processes image jobs using Gemini AI.
 
    Open [http://localhost:3000](http://localhost:3000)
 
