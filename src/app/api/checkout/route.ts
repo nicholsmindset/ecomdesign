@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
           name: item.name,
           images: item.image ? [item.image] : [],
         },
-        unit_amount: item.price, // Price is already in cents
+        unit_amount: Math.round(Number(item.price) * 100), // Convert dollars to cents
       },
       quantity: item.quantity,
     }));

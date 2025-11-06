@@ -25,23 +25,29 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount (client-side only)
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error loading cart:', error);
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        try {
+          setItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error('Error loading cart:', error);
+        }
       }
+      setIsInitialized(true);
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (but only after initialization)
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+    if (typeof window !== 'undefined' && isInitialized) {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }
+  }, [items, isInitialized]);
 
   const addItem = (newItem: CartItem) => {
     setItems((currentItems) => {

@@ -181,7 +181,7 @@ async function createOrderFromSession(session: Stripe.Checkout.Session) {
               orderId,
               item.id,
               item.quantity || 1,
-              (item.price || 0) / 100, // Convert from cents to dollars
+              Number(item.price) || 0, // Price in metadata is already in dollars
               new Date().toISOString()
             );
           }

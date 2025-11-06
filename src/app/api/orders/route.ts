@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import Database from 'better-sqlite3';
 import * as path from 'path';
 
 export async function GET(req: NextRequest) {
   try {
-    // Get session - note: in production you'd import authOptions from your NextAuth config
-    // For now, we'll use a simple check based on the request
-    const session = await getServerSession();
+    // Get session with authOptions
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.email) {
       return NextResponse.json(
