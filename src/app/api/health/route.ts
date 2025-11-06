@@ -1,19 +1,25 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import Database from 'better-sqlite3';
+import * as path from 'path';
 
 export async function GET() {
   try {
-    // Check database connection
-    await prisma.$queryRaw`SELECT 1`;
+    const dbPath = path.join(process.cwd(), 'prisma', 'dev.db');
+    const db = new Database(dbPath, { readonly: true });
 
-    return NextResponse.json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      database: 'connected',
-      service: 'e-commerce-platform'
-    });
+    try {
+      // Check database connection
+      db.prepare('SELECT 1').get();
+
+      return NextResponse.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        database: 'connected',
+        service: 'e-commerce-platform'
+      });
+    } finally {
+      db.close();
+    }
   } catch (error) {
     return NextResponse.json({
       status: 'unhealthy',
@@ -22,7 +28,5 @@ export async function GET() {
       service: 'e-commerce-platform',
       error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 503 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

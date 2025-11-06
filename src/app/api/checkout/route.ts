@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2023-10-16',
 });
 
 export async function POST(req: NextRequest) {
@@ -33,6 +33,24 @@ export async function POST(req: NextRequest) {
     // Get the origin for redirect URLs
     const origin = req.headers.get('origin') || 'http://localhost:3000';
 
+    // Prepare metadata with product IDs for order creation
+    const productIds = items.map((item: any) => item.id || '').filter(Boolean);
+    const metadata: Record<string, string> = {
+      customerFirstName: customerInfo.firstName,
+      customerLastName: customerInfo.lastName,
+      customerAddress: customerInfo.address,
+      customerCity: customerInfo.city,
+      customerState: customerInfo.state,
+      customerZipCode: customerInfo.zipCode,
+      customerCountry: customerInfo.country,
+      cartItems: JSON.stringify(items.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      }))),
+    };
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -44,15 +62,7 @@ export async function POST(req: NextRequest) {
       shipping_address_collection: {
         allowed_countries: ['US', 'CA', 'GB', 'AU'],
       },
-      metadata: {
-        customerFirstName: customerInfo.firstName,
-        customerLastName: customerInfo.lastName,
-        customerAddress: customerInfo.address,
-        customerCity: customerInfo.city,
-        customerState: customerInfo.state,
-        customerZipCode: customerInfo.zipCode,
-        customerCountry: customerInfo.country,
-      },
+      metadata,
     });
 
     return NextResponse.json({ url: session.url });

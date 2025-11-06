@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { CartProvider } from "@/contexts/CartContext";
-
-const inter = Inter({ subsets: ["latin"] });
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "E-Commerce Design Platform",
@@ -19,12 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <CartProvider>
+      <body className="flex flex-col min-h-screen font-sans">
+        <Providers>
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
-        </CartProvider>
+        </Providers>
       </body>
     </html>
   );
